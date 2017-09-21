@@ -1,33 +1,29 @@
-package kmitl.lab04.sirichai.SimpleMyDot;
+package kmitl.lab05.sirichai.SimpleMyDot;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Random;
 
-import kmitl.lab04.sirichai.SimpleMyDot.model.Colors;
-import kmitl.lab04.sirichai.SimpleMyDot.model.Dot;
-import kmitl.lab04.sirichai.SimpleMyDot.model.DotParcelable;
-import kmitl.lab04.sirichai.SimpleMyDot.model.Dots;
-import kmitl.lab04.sirichai.SimpleMyDot.model.Screenshot;
-import kmitl.lab04.sirichai.SimpleMyDot.view.DotView;
+import kmitl.lab05.sirichai.SimpleMyDot.model.Colors;
+import kmitl.lab05.sirichai.SimpleMyDot.model.Dot;
+import kmitl.lab05.sirichai.SimpleMyDot.model.DotParcelable;
+import kmitl.lab05.sirichai.SimpleMyDot.model.Dots;
+import kmitl.lab05.sirichai.SimpleMyDot.model.Screenshot;
+import kmitl.lab05.sirichai.SimpleMyDot.view.DotView;
 
-public class MainActivity extends AppCompatActivity implements Dots.OnDotsChangeListener, DotView.OnDotViewPressListener {
+public class MainActivity extends AppCompatActivity implements Dots.OnDotsChangeListener, DotView.OnDotViewTouchListener {
 
     private DotView dotView;
-    private Dot dot;
     private Dots dots;
 
     @Override
@@ -37,8 +33,8 @@ public class MainActivity extends AppCompatActivity implements Dots.OnDotsChange
 
             dotView = (DotView) findViewById(R.id.dotview);
             dots = new Dots();
-            dots.setListener((Dots.OnDotsChangeListener) this);
-            dotView.setOnDotViewPressListener(this);
+            dots.setListener(this);
+            dotView.setListener(this);
         }
 
     public void onRandomDot(View view) {
@@ -63,7 +59,7 @@ public class MainActivity extends AppCompatActivity implements Dots.OnDotsChange
         saveBitmap(b);
         File imagePath = new File(this.getCacheDir(), "images");
         File newFile = new File(imagePath, "image.png");
-        Uri contentUri = FileProvider.getUriForFile(this, "kmitl.lab04.sirichai.SimpleMyDot.fileprovider", newFile);
+        Uri contentUri = FileProvider.getUriForFile(this, "kmitl.lab05.sirichai.SimpleMyDot.fileprovider", newFile);
         if (contentUri != null) {
             Intent shareIntent = new Intent();
             shareIntent.setAction(Intent.ACTION_SEND);
@@ -89,46 +85,17 @@ public class MainActivity extends AppCompatActivity implements Dots.OnDotsChange
         }
     }
 
-
     @Override
     public void onDotsChanged(Dots dots) {
         dotView.setDots(dots);
         dotView.invalidate();
     }
-    @Override
-    public void onDotViewPressed(int x, int y) {
-        int dotPosition = dots.findDot(x, y);
-        if(dotPosition == -1) {
-            Dot newDot = new Dot(x, y, 30, new Colors().getColor());
-            dots.addDot(newDot);
-        } else {
-            alertDialog(dotPosition);
-        }
-    }
 
     public void alertDialog(final int dotPosition) {
-        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                this);
-        alertDialogBuilder.setTitle("What you want to do?");
-        alertDialogBuilder
-                .setMessage("")
-                .setCancelable(true)
-                .setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dots.removeBy(dotPosition);
-                        Toast.makeText(getApplicationContext(), "Deleted", Toast.LENGTH_SHORT).show();
-                    }
-                })
-                .setNegativeButton("Edit", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        final DotParcelable dotParcelable = new DotParcelable(dotPosition, dots.getAllDot().get(dotPosition).getColor(), dots.getAllDot().get(dotPosition).getRadius());
-                        Intent editActIntent = new Intent(MainActivity.this, EditActivity.class);
-                        editActIntent.putExtra("dotParcelable", dotParcelable);
-                        startActivityForResult(editActIntent, 1);
-                    }
-                });
-        AlertDialog alertDialog = alertDialogBuilder.create();
-        alertDialog.show();
+        final DotParcelable dotParcelable = new DotParcelable(dotPosition, dots.getAllDot().get(dotPosition).getColor(), dots.getAllDot().get(dotPosition).getRadius());
+        Intent editActIntent = new Intent(MainActivity.this, EditActivity.class);
+        editActIntent.putExtra("dotParcelable", dotParcelable);
+        startActivityForResult(editActIntent, 1);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -141,6 +108,30 @@ public class MainActivity extends AppCompatActivity implements Dots.OnDotsChange
             }
         }
     }
+
+    @Override
+    public void onDotViewPress(int x, int y) {
+        int dotPosition = dots.findDot(x, y);
+        if(dotPosition == -1) {
+            Dot newDot = new Dot(x, y, 30, new Colors().getColor());
+            dots.addDot(newDot);
+        } else {
+            dots.removeBy(dotPosition);
+        }
+    }
+
+    @Override
+    public void onDotViewLongPress(int x, int y) {
+        int dotPosition = dots.findDot(x, y);
+        if(dotPosition == -1) {
+            return;
+        } else {
+            alertDialog(dotPosition);
+        }
+    }
+
+
+
 }
 
 
