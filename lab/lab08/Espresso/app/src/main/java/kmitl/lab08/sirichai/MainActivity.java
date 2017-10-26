@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
 
     private CommonSharePreference preference;
     private UserInfoList userInfoList;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,7 +32,6 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this, this);
         preference = new CommonSharePreference(this);
         userInfoList = (UserInfoList) preference.read(UserInfoListActivity.EXTTRA_LIST, UserInfoList.class);
-
     }
     @Override
     protected void onResume() {
