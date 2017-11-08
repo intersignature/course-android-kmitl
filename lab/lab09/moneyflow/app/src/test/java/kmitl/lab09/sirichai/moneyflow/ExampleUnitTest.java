@@ -1,4 +1,4 @@
-package sirichai.lab09.kmitl.lab09;
+package kmitl.lab09.sirichai.moneyflow;
 
 import org.junit.Test;
 
