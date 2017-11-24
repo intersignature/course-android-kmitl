@@ -28,33 +28,26 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_transaction);
-
-        initInstances();
-    }
-
-    private void initInstances() {
-        initDB();
-
         radioType = findViewById(R.id.radioType);
         etDescribe = findViewById(R.id.etDescribe);
         etAmount = findViewById(R.id.etAmount);
         btnSave = findViewById(R.id.btnSave);
         btnDelete = findViewById(R.id.btnDelete);
-
-        radioType.check(R.id.income); // default
-        btnSave.setOnClickListener(this);
-        btnDelete.setOnClickListener(this);
-
-        mTransaction = getIntent().getParcelableExtra(Transaction.class.getSimpleName());
-
-        setupInfo();
-    }
-
-    private void initDB() {
         database = Room.databaseBuilder(getApplicationContext(), MoneyFlowDB.class, "DB")
                 .fallbackToDestructiveMigration()
                 .build();
+
+        initInstances();
     }
+
+    private void initInstances() {
+        radioType.check(R.id.income); // default
+        btnSave.setOnClickListener(this);
+        btnDelete.setOnClickListener(this);
+        mTransaction = getIntent().getParcelableExtra(Transaction.class.getSimpleName());
+        setupInfo();
+    }
+
 
     private void setupInfo() {
         if (mTransaction != null) {
@@ -73,67 +66,59 @@ public class TransactionActivity extends AppCompatActivity implements View.OnCli
         }
     }
 
-    private void save() {
-        String type;
-        String describe;
-        int amount;
-
-        switch (radioType.getCheckedRadioButtonId()) {
-            case R.id.income:
-                type = getString(R.string.type_income);
-                break;
-            case R.id.outcome:
-                type = getString(R.string.type_outcome);
-                break;
-            default:
-                type = "";
-        }
-
-        describe = etDescribe.getText().toString();
-
-        try {
-            amount = Integer.parseInt(etAmount.getText().toString());
-        } catch (IllegalArgumentException ignore) {
-            Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        Transaction transaction = new Transaction(type, describe, amount);
-
-        if (mTransaction != null) {
-            mTransaction.updateInfo(transaction);
-            new UpdateTransTask(database, new UpdateTransTask.OnUpdateSuccessListener() {
-                @Override
-                public void onUpdateSuccess() {
-                    finish();
-                }
-            }).execute(mTransaction);
-
-        } else {
-            new AddTransTask(database, new AddTransTask.OnAddSuccessListener() {
-                @Override
-                public void onAddSuccess() {
-                    finish();
-                }
-            }).execute(transaction);
-        }
-    }
-
-    private void delete() {
-        new DeleteTransTask(database, new DeleteTransTask.OnDeleteSuccessListener() {
-            @Override
-            public void onDeleteSuccess() {
-                finish();
-            }
-        }).execute(mTransaction);
-    }
-
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.btnSave) {
-            save();
+            String type;
+            String describe;
+            int amount;
+
+            switch (radioType.getCheckedRadioButtonId()) {
+                case R.id.income:
+                    type = getString(R.string.type_income);
+                    break;
+                case R.id.outcome:
+                    type = getString(R.string.type_outcome);
+                    break;
+                default:
+                    type = "";
+            }
+
+            describe = etDescribe.getText().toString();
+
+            try {
+                amount = Integer.parseInt(etAmount.getText().toString());
+            } catch (IllegalArgumentException ignore) {
+                Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Transaction transaction = new Transaction(type, describe, amount);
+
+            if (mTransaction != null) {
+                mTransaction.updateInfo(transaction);
+                new UpdateTransTask(database, new UpdateTransTask.OnUpdateSuccessListener() {
+                    @Override
+                    public void onUpdateSuccess() {
+                        finish();
+                    }
+                }).execute(mTransaction);
+
+            } else {
+                new AddTransTask(database, new AddTransTask.OnAddSuccessListener() {
+                    @Override
+                    public void onAddSuccess() {
+                        finish();
+                    }
+                }).execute(transaction);
+            }
         } else if (view.getId() == R.id.btnDelete) {
-            delete();
+            new DeleteTransTask(database, new DeleteTransTask.OnDeleteSuccessListener() {
+                @Override
+                public void onDeleteSuccess() {
+                    finish();
+                }
+            }).execute(mTransaction);
         }
     }
 }

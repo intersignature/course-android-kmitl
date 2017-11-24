@@ -36,7 +36,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        database = Room.databaseBuilder(getApplicationContext(), MoneyFlowDB.class, "DB")
+                .fallbackToDestructiveMigration()
+                .build();
         initInstances();
     }
 
@@ -47,8 +49,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initInstances() {
-        initDB();
-
         textMoney = findViewById(R.id.textMoney);
         list = findViewById(R.id.list);
         btnAdd = findViewById(R.id.btnAdd);
@@ -75,12 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 startTransactionActivity(null);
             }
         });
-    }
-
-    private void initDB() {
-        database = Room.databaseBuilder(getApplicationContext(), MoneyFlowDB.class, "DB")
-                .fallbackToDestructiveMigration()
-                .build();
     }
 
     private void startTransactionActivity(@Nullable Transaction transaction) {
@@ -110,9 +104,9 @@ public class MainActivity extends AppCompatActivity {
             list.setVisibility(View.GONE);
         } else {
             list.setVisibility(View.VISIBLE);
-            adapter.setTransactionList(transactionList);
-            adapter.notifyDataSetChanged();
         }
+        adapter.setTransactionList(transactionList);
+        adapter.notifyDataSetChanged();
     }
 
     private void updateMoney(Summary summary) {
